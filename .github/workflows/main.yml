@@ -1,0 +1,29 @@
+name: 自动备份 Xray 安装包
+
+on:
+  workflow_dispatch: # 允许你手动点击按钮触发更新
+  schedule:
+    - cron: '0 0 * * 1' # 每周一自动运行一次，检查并同步官方最新版
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 获取官方最新版本号
+        id: get_version
+        run: |
+          VERSION=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 下载官方安装包
+        run: |
+          wget https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+
+      - name: 发布到我自己的 Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: Xray 备份版本 ${{ env.VERSION }}
+          files: Xray-linux-64.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
