@@ -1,2 +1,2 @@
-# xray-script
+# 备份
 x-ray
